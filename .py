@@ -9,7 +9,7 @@
 import os
 import json
 import mailchimp_marketing
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv 
 from mailchimp_marketing.api_client import ApiClientError
 
@@ -22,15 +22,22 @@ api_key = os.getenv('MAILCHIMP_API_KEY')
 # ################################# Campaign Lists #####################################################
 
 # build filename
-now = datetime.now()
-now = now.strftime('%Y%M%d_%H%m%S')
+now = datetime.now().strftime('%Y%m%d_%H%m%S')
 file_name = './data/campaigns/' + f'data_campaign_list_{now}.json'
+
+end_time = datetime.now().strftime('%Y-%m-%dT00:00:00')
+start_time=datetime.now() - timedelta(days=1)
+start_time=start_time.strftime('%Y-%m-%dT00:00:00')
+
+print(start_time, end_time)
 
 # extract json
 try:
   client = mailchimp_marketing.Client()
   client.set_config({
-    "api_key": api_key
+    "api_key": api_key,
+    "since_send_time" : start_time,
+    "before_sent_time" : end_time
   })
 
   response = client.campaigns.list()
@@ -57,11 +64,6 @@ for cid in campaign_ids:
 
     # extract json
     try:
-        client = mailchimp_marketing.Client()
-        client.set_config({
-            "api_key": api_key
-    })
-
         response = client.campaigns.get_content(cid)
         with open(file_name, 'w') as file:
             json.dump(response, file, indent=4)
@@ -78,11 +80,6 @@ for cid in campaign_ids:
 
     # extract json
     try:
-        client = mailchimp_marketing.Client()
-        client.set_config({
-            "api_key": api_key
-    })
-
         response = client.reports.get_unsubscribed_list_for_campaign(cid)
         with open(file_name, 'w') as file:
             json.dump(response, file, indent=4)
@@ -98,11 +95,6 @@ now = now.strftime('%Y%M%d_%H%m%S')
 file_name = './data/lists/'+f'data_lists_{now}.json'
 
 try:
-  client = mailchimp_marketing.Client()
-  client.set_config({
-    "api_key": api_key
-  })
-
   response = client.lists.get_all_lists()
   with open(file_name, 'w') as file:
     json.dump(response, file, indent=4)
@@ -126,11 +118,6 @@ for lid in list_ids:
 
     # extract json
     try:
-        client = mailchimp_marketing.Client()
-        client.set_config({
-            "api_key": api_key
-    })
-
         response = client.lists.get_list_members_info(lid)
         with open(file_name, 'w') as file:
             json.dump(response, file, indent=4)
@@ -145,11 +132,6 @@ now = now.strftime('%Y%M%d_%H%m%S')
 file_name = './data/reports/'+f'data_reports_{now}.json'
 
 try:
-  client = mailchimp_marketing.Client()
-  client.set_config({
-    "api_key": api_key
-  })
-
   response = client.reports.get_all_campaign_reports()
   with open(file_name, 'w') as file:
     json.dump(response, file, indent=4)
